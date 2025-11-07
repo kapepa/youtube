@@ -4,6 +4,7 @@ import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, Side
 import { ROUTERS } from "@/lib/routers";
 import { SectionPersonInt } from "@/lib/types/section-item";
 import { HistoryIcon, ListVideoIcon, ThumbsUpIcon } from "lucide-react";
+import { useAuth, useClerk } from "@clerk/nextjs";
 import Link from "next/link";
 import { FC } from "react";
 
@@ -29,6 +30,8 @@ const items: SectionPersonInt[] = [
 ]
 
 const PersoneSection: FC = () => {
+  const clerk = useClerk();
+  const { isSignedIn } = useAuth()
 
   return (
     <SidebarGroup>
@@ -46,7 +49,12 @@ const PersoneSection: FC = () => {
                   tooltip={item.title}
                   asChild
                   isActive={false}
-                  onClick={() => { }}
+                  onClick={(e) => {
+                    if (!isSignedIn && item.auth) {
+                      e.preventDefault();
+                      return clerk.openSignIn();
+                    }
+                  }}
                 >
                   <Link
                     href={item.url}

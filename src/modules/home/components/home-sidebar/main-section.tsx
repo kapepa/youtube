@@ -3,6 +3,7 @@
 import { SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { ROUTERS } from "@/lib/routers";
 import { SectionItemInt } from "@/lib/types/section-item";
+import { useAuth, useClerk } from "@clerk/nextjs";
 import { FlameIcon, HomeIcon, PlaySquareIcon } from "lucide-react";
 import Link from "next/link";
 import { FC } from "react";
@@ -27,6 +28,8 @@ const items: SectionItemInt[] = [
 ]
 
 const MainSection: FC = () => {
+  const clerk = useClerk();
+  const { isSignedIn } = useAuth()
 
   return (
     <SidebarGroup>
@@ -41,7 +44,12 @@ const MainSection: FC = () => {
                   tooltip={item.title}
                   asChild
                   isActive={false}
-                  onClick={() => { }}
+                  onClick={(e) => {
+                    if (!isSignedIn && item.auth) {
+                      e.preventDefault();
+                      return clerk.openSignIn();
+                    }
+                  }}
                 >
                   <Link
                     href={item.url}
