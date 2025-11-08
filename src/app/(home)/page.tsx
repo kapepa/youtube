@@ -4,4 +4,4 @@ export default function Home() {
       I will load videos in the feature
     </div>
   );
-}
+};
