@@ -1,7 +1,7 @@
 export default function Home() {
   return (
     <div>
-      I will load videos in the feature
+      I will load videos in the feature!
     </div>
   );
 };
