@@ -2,13 +2,13 @@
 
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { ROUTERS } from "@/lib/routers";
-import { SectionPersonInt } from "@/lib/types/section-item";
+import { NavItemInt } from "@/lib/types/nav-item";
 import { HistoryIcon, ListVideoIcon, ThumbsUpIcon } from "lucide-react";
 import { useAuth, useClerk } from "@clerk/nextjs";
 import Link from "next/link";
 import { FC } from "react";
 
-const items: SectionPersonInt[] = [
+const items: NavItemInt[] = [
   {
     url: ROUTERS.PLAYLIST_HISTORY,
     icon: HistoryIcon,

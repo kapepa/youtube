@@ -5,5 +5,5 @@ export enum ROUTERS {
   PLAYLIST = "/playlist",
   PLAYLIST_LIKED = "/playlist/liked",
   PLAYLIST_HISTORY = "/playlist/history",
-  PROTECTED = "/protected"
+  PROTECTED = "/protected",
 }

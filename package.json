@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "dev:all": "concurrently \"npm run dev:webhook\" \"npm run dev\" ",
+    "dev:webhook": "ngrok http --url=ethnogenic-isothermally-rich.ngrok-free.dev 3000",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -17,6 +19,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "concurrently": "^9.2.1",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.7",
     "lucide-react": "^0.552.0",
