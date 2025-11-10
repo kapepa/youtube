@@ -5,7 +5,7 @@ export const usersTable = pgTable("users", {
   clerkId: text("clerkId").unique().notNull(),
   // name: varchar({ length: 255 }).notNull(),
   name: text("name").notNull(),
-  email: varchar({ length: 255 }).notNull().unique(),
+  email: varchar({ length: 255 }).unique(),// how to do fidn optional?
   imageUrl: text("image_url").notNull(),
   createdAt: timestamp("create_at").defaultNow().notNull(),
   updateAt: timestamp("update_at").defaultNow().notNull(),
