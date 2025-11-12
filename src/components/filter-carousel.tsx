@@ -33,8 +33,6 @@ const FilterCarousel: FC<FilterCarouselProps> = (props) => {
     })
   }, [api]);
 
-  console.log("categoryId", value)
-
   return (
     <div
       className="relative w-full"
