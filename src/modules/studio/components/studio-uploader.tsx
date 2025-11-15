@@ -27,7 +27,7 @@ const StudioUploader: FC<StudioUploader> = (props) => {
       >
         <div
           slot="heading"
-          className="group flex-col items-center gap-6"
+          className="group flex flex-col items-center gap-6"
         >
           <div
             className="flex items-center justify-center gap-2 rounded-full bg-muted h-32 w-32"
