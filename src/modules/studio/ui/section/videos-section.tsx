@@ -12,11 +12,12 @@ import { FC, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { format } from "date-fns";
 import { Globe2Icon, LockIcon } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const VideosSection: FC = () => {
   return (
     <Suspense
-      fallback={<p>Loading</p>}
+      fallback={<VideosSectionSkeleton />}
     >
       <ErrorBoundary
         fallback={<p>Error</p>}
@@ -24,6 +25,109 @@ const VideosSection: FC = () => {
         <VideosSectionSuspense />
       </ErrorBoundary>
     </Suspense>
+  )
+}
+
+const VideosSectionSkeleton: FC = () => {
+  return (
+    <>
+      <div
+        className="border-y"
+      >
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead
+                className="pl-6 w-[510px]"
+              >
+                Video
+              </TableHead>
+              <TableHead>
+                Visibility
+              </TableHead>
+              <TableHead>
+                Status
+              </TableHead>
+              <TableHead>
+                Date
+              </TableHead>
+              <TableHead>
+                Views
+              </TableHead>
+              <TableHead>
+                Coments
+              </TableHead>
+              <TableHead
+                className=" pr-6"
+              >
+                Likes
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {
+              Array.from({ length: 5 }).map((_, index) => (
+                <TableRow
+                  key={`VideosSectionSkeleton-${index}`}
+                >
+                  <TableCell
+                    className="pl-6"
+                  >
+                    <div
+                      className="flex items-center gap-4"
+                    >
+                      <Skeleton
+                        className="h-20 w-36"
+                      />
+                      <div
+                        className="flex flex-col gap-2"
+                      >
+                        <Skeleton
+                          className="h-4 w-24"
+                        />
+                        <Skeleton
+                          className="h-4 w-36"
+                        />
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton
+                      className="h-4 w-20"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton
+                      className="h-4 w-16"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton
+                      className="h-4 w-24"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton
+                      className="h-4 w-12 ml-auto"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton
+                      className="h-4 w-12 ml-auto"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton
+                      className="h-4 w-12 ml-auto"
+                    />
+                  </TableCell>
+                </TableRow>
+              ))
+            }
+          </TableBody>
+        </Table>
+      </div>
+    </>
   )
 }
 
@@ -63,7 +167,7 @@ const VideosSectionSuspense: FC = () => {
                 Coments
               </TableHead>
               <TableHead
-                className=" pr-6"
+                className="pr-6"
               >
                 Likes
               </TableHead>
@@ -77,7 +181,9 @@ const VideosSectionSuspense: FC = () => {
                   className="cursor-pointer"
                   onClick={() => { router.push(`${ROUTERS.STUDIO_VIDEOS}/${video.id}`) }}
                 >
-                  <TableCell>
+                  <TableCell
+                    className="pl-6"
+                  >
                     <div
                       className="flex items-center gap-4"
                     >

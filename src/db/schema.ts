@@ -1,5 +1,6 @@
 import { timestamp, pgTable, uuid, varchar, text, uniqueIndex, integer, pgEnum } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm"
+import { createInsertSchema, createUpdateSchema, createSelectSchema } from 'drizzle-zod';
 
 export const usersTable = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -52,6 +53,10 @@ export const videosTable = pgTable("videos", {
   createdAt: timestamp("create_at").defaultNow().notNull(),
   updateAt: timestamp("update_at").defaultNow().notNull(),
 });
+
+export const videoInsertSchema = createInsertSchema(videosTable);
+export const videoUpdateSchema = createUpdateSchema(videosTable);
+export const videoSelectSchema = createSelectSchema(videosTable)
 
 export const videosRelations = relations(videosTable, ({ one }) => ({
   user: one(usersTable, {
