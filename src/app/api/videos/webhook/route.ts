@@ -100,6 +100,7 @@ export const POST = async (req: Request) => {
             muxTrackStatus: status,
           })
           .where(eq(videosTable.muxAssetId, assetId))
+
         break;
       }
     }

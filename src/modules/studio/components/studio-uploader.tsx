@@ -21,6 +21,7 @@ const StudioUploader: FC<StudioUploader> = (props) => {
         id={UPLOADER_ID}
         endpoint={endpoint}
         className="hidden group/uploader"
+        onSuccess={onSuccess}
       />
       <MuxUploaderDrop
         muxUploader={UPLOADER_ID}
