@@ -1,18 +1,21 @@
 import type { NextConfig } from "next";
 
-const nextConfig = {
+const nextConfig: NextConfig = {
   images: {
-    domains: ['image.mux.com'],
     formats: ['image/webp', 'image/avif'],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'image.mux.com',
-        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'utfs.io',
         pathname: '/**',
       },
     ],
   },
-}
+};
 
-module.exports = nextConfig
+export default nextConfig;
