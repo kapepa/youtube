@@ -1,5 +1,7 @@
+"use client"
+
 import { FC, Suspense } from "react";
-import { CategoriesSection, CategoriesSectionSuspense } from "../sections/categories-section";
+import { CategoriesSection } from "../sections/categories-section";
 import { ErrorBoundary } from "react-error-boundary";
 
 interface HomeViewProps {
