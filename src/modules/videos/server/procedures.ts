@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { usersTable, videosTable, videoUpdateSchema } from "@/db/schema";
+import { usersTable, videosTable, videoUpdateSchema, videoViewsTable } from "@/db/schema";
 import { mux } from "@/lib/mux";
 import { workflow } from "@/lib/qstash";
 import { baseProcedure, createTRPCRouter, protectedProcedure } from "@/trpc/init";
@@ -17,7 +17,8 @@ export const videosRouter = createTRPCRouter({
           ...getTableColumns(videosTable),
           user: {
             ...getTableColumns(usersTable),
-          }
+          },
+          videoCount: db.$count(videoViewsTable, eq(videoViewsTable.videoId, videosTable.id))
         })
         .from(videosTable)
         .innerJoin(usersTable, eq(videosTable.userId, usersTable.id))
