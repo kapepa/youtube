@@ -1,5 +1,6 @@
 export enum ROUTERS {
   HOME = "/",
+  USER = "/user",
   USER_CURRENT = "/user/current",
   STUDIO = "/studio",
   STUDIO_VIDEOS = "/studio/videos",
