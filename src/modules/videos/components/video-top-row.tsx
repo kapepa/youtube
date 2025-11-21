@@ -52,7 +52,12 @@ const VideoTopRow: FC<VideoTopRowProps> = (props) => {
         <div
           className="flex overflow-x-auto sm:min-w-[calc(50%-6px)] sm:justify-end sm:overflow-visible pb-2 -mb-2 sm:pb-0 gap-2"
         >
-          <VideoReactions />
+          <VideoReactions
+            likes={video.likeCount}
+            dislikes={video.dislikeCount}
+            videoId={video.id}
+            viewerReaction={video.viewerReactions}
+          />
           <VideoMenu
             videoId={video.id}
             variant="secondary"
