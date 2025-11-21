@@ -1,10 +1,10 @@
 import { db } from "@/db";
-import { usersTable, videoReactionsTable, videosTable, videoUpdateSchema, videoViewsTable } from "@/db/schema";
+import { subscriptionsTable, usersTable, videoReactionsTable, videosTable, videoUpdateSchema, videoViewsTable } from "@/db/schema";
 import { mux } from "@/lib/mux";
 import { workflow } from "@/lib/qstash";
 import { baseProcedure, createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { and, eq, getTableColumns, inArray } from "drizzle-orm";
+import { and, eq, getTableColumns, inArray, isNotNull } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import z from "zod";
 
@@ -32,12 +32,21 @@ export const videosRouter = createTRPCRouter({
           .where(inArray(videoReactionsTable.userId, userId ? [userId] : [])),
       );
 
+      const viewerSubscriptions = db.$with("viewer_subscriptions").as(
+        db
+          .select()
+          .from(subscriptionsTable)
+          .where(inArray(subscriptionsTable.viewerId, userId ? [userId] : []))
+      )
+
       const [existingVideo] = await db
-        .with(viewerReactions)
+        .with(viewerReactions, viewerSubscriptions)
         .select({
           ...getTableColumns(videosTable),
           user: {
             ...getTableColumns(usersTable),
+            subscriberCount: db.$count(subscriptionsTable, eq(subscriptionsTable.creatorId, usersTable.id)),
+            viewerSubscribed: isNotNull(viewerSubscriptions.viewerId).mapWith(Boolean),
           },
           videoCount: db.$count(videoViewsTable, eq(videoViewsTable.videoId, videosTable.id)),
           likeCount: db.$count(videoReactionsTable,
@@ -57,6 +66,7 @@ export const videosRouter = createTRPCRouter({
         .from(videosTable)
         .innerJoin(usersTable, eq(videosTable.userId, usersTable.id))
         .leftJoin(viewerReactions, eq(viewerReactions.videoId, videosTable.id))
+        .leftJoin(viewerSubscriptions, eq(viewerSubscriptions.creatorId, usersTable.id))
         .where(
           eq(videosTable.id, input.id)
         )

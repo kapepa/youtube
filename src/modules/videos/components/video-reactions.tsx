@@ -14,7 +14,7 @@ interface VideoReactionsProps {
   likes: number,
   dislikes: number,
   videoId: string,
-  viewerReaction: ReactionType,
+  viewerReaction: ReactionType | null,
 }
 
 const VideoReactions: FC<VideoReactionsProps> = (props) => {
