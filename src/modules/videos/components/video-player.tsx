@@ -11,6 +11,14 @@ interface VideoPlayerProps {
   thumbnailUrl?: string | null,
 }
 
+const VideoPlayerSkeleton: FC = () => {
+  return (
+    <div
+      className="aspect-video bg-black rounded-xl"
+    />
+  )
+}
+
 const VideoPlayer: FC<VideoPlayerProps> = (props) => {
   const { onPlay, autoPlay, playbackId, thumbnailUrl } = props;
 
@@ -30,4 +38,4 @@ const VideoPlayer: FC<VideoPlayerProps> = (props) => {
   )
 }
 
-export { VideoPlayer }
+export { VideoPlayer, VideoPlayerSkeleton }

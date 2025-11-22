@@ -23,6 +23,7 @@ export const userRelations = relations(usersTable, ({ many }) => ({
   subscribers: many(subscriptionsTable, {
     relationName: "subscriptions_creator_id_fkey",
   }),
+  comments: many(commentsTable),
 }))
 
 export const subscriptionsTable = pgTable("subscriptions", {
@@ -38,12 +39,12 @@ export const subscriptionsTable = pgTable("subscriptions", {
 ])
 
 export const subscriptionsRelations = relations(subscriptionsTable, ({ one }) => ({
-  viewerId: one(usersTable, {
+  viewer: one(usersTable, {
     fields: [subscriptionsTable.viewerId],
     references: [usersTable.id],
     relationName: "subscriptions_viewer_id_fkey",
   }),
-  creatorId: one(usersTable, {
+  creator: one(usersTable, {
     fields: [subscriptionsTable.creatorId],
     references: [usersTable.id],
     relationName: "subscriptions_creator_id_fkey",
@@ -104,7 +105,33 @@ export const videosRelations = relations(videosTable, ({ one, many }) => ({
   }),
   views: many(videoViewsTable),
   reactions: many(videoReactionsTable),
+  comments: many(commentsTable),
 }))
+
+export const commentsTable = pgTable("comments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").references(() => usersTable.id, { onDelete: "cascade" }).notNull(),
+  videoId: uuid("video_id").references(() => videosTable.id, { onDelete: "cascade" }).notNull(),
+  value: text("value").notNull(),
+  createdAt: timestamp("create_at").defaultNow().notNull(),
+  updateAt: timestamp("update_at").defaultNow().notNull(),
+})
+
+export const commentsRelations = relations(commentsTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [commentsTable.userId],
+    references: [usersTable.id],
+  }),
+  video: one(videosTable, {
+    fields: [commentsTable.userId],
+    references: [videosTable.id],
+  }),
+}));
+
+export const commentSelectSchema = createSelectSchema(commentsTable);
+export const commentInsertSchema = createInsertSchema(commentsTable);
+export const commentUpdateSchema = createUpdateSchema(commentsTable);
+
 
 export const videoViewsTable = pgTable("video_views", {
   userId: uuid("user_id").references(() => usersTable.id, { onDelete: "cascade" }).notNull(),
