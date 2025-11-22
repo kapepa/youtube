@@ -28,10 +28,12 @@ const VideoView: FC<VideoViewProps> = (props) => {
           >
             <SuggestionsSection />
           </div>
-          <CommentsSection />
+          <CommentsSection
+            videoId={videoId}
+          />
         </div>
         <div
-          className="hidden xl:block w-full xl:w-[380px] 2xl:w-[460px] shrink-1"
+          className="hidden xl:block w-full xl:w-[380px] 2xl:w-[460px] shrink"
         >
           <SuggestionsSection />
         </div>
