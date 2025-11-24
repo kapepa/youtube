@@ -1,5 +1,6 @@
 import { createTRPCRouter } from '../init';
 import { categoriesRouter } from '@/modules/categories/server/procedures';
+import { commentReactionsRouter } from '@/modules/comment-reactions/server/procedure';
 import { commentsRouter } from '@/modules/comments/server/procedures';
 import { studioRouter } from '@/modules/studio/server/procedures';
 import { subscriptionsRouter } from '@/modules/subscription/server/procedures';
@@ -15,6 +16,7 @@ export const appRouter = createTRPCRouter({
   videoReactions: videoReactionsRouter,
   subscriptions: subscriptionsRouter,
   comments: commentsRouter,
+  commentReactions: commentReactionsRouter
 });
 
 export type AppRouter = typeof appRouter;
