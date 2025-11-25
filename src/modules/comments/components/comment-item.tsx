@@ -1,4 +1,6 @@
-import { FC } from "react";
+"use client"
+
+import { FC, useState } from "react";
 import { CommentsGetManyOutput } from "../types";
 import Link from "next/link";
 import { ROUTERS } from "@/lib/routers";
@@ -7,20 +9,27 @@ import { formatDistanceToNow } from "date-fns"
 import { trpc } from "@/trpc/client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MessageSquareIcon, MoreVertical, ThumbsDownIcon, ThumbsUpIcon, Trash2Icon } from "lucide-react";
+import { ChevronDownIcon, ChevronUpIcon, MessageSquareIcon, MoreVertical, ThumbsDownIcon, ThumbsUpIcon, Trash2Icon } from "lucide-react";
 import { useAuth, useClerk } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { CommentForm } from "./comment-form";
+import { CommentReplies } from "./comment-replies";
 
 interface CommentItemProps {
   comment: CommentsGetManyOutput["items"][number],
+  variant?: "reply" | "comment",
 }
 
 const CommentItem: FC<CommentItemProps> = (props) => {
-  const { comment } = props;
+  const { comment, variant = "comment" } = props;
   const clerk = useClerk();
   const { userId } = useAuth();
   const utils = trpc.useUtils();
+
+  const [isReplyOpen, setIsReplyOpen] = useState<boolean>(false);
+  const [isRepliesOpen, setIsRepliesOpen] = useState<boolean>(false);
+
   const remove = trpc.comments.remove.useMutation({
     onSuccess: () => {
       toast.success("Comment deleted");
@@ -66,7 +75,7 @@ const CommentItem: FC<CommentItemProps> = (props) => {
           href={`${ROUTERS.USER}/${comment.userId}`}
         >
           <UserAvatar
-            size="lg"
+            size={variant === "comment" ? "lg" : "sm"}
             name={comment.user.name}
             imageUrl={comment.user.imageUrl}
           />
@@ -140,49 +149,112 @@ const CommentItem: FC<CommentItemProps> = (props) => {
                 {comment.dislikeCount}
               </span>
             </div>
-          </div>
-        </div>
-        <DropdownMenu
-          modal={false}
-        >
-          <DropdownMenuTrigger
-            asChild
-          >
-            <Button
-              size="icon"
-              variant="ghost"
-              className="size-8"
-            >
-              <MoreVertical />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-          >
-            <DropdownMenuItem
-              onClick={() => { }}
-            >
-              <MessageSquareIcon
-                className="size-4"
-              />
-              Reply
-            </DropdownMenuItem>
             {
-              comment.user.clerkId === userId
+              variant === "comment"
               && (
-                <DropdownMenuItem
-                  onClick={() => remove.mutate({ id: comment.id })}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8"
+                  onClick={() => setIsReplyOpen(true)}
                 >
-                  <Trash2Icon
-                    className="size-4"
-                  />
-                  Delete
-                </DropdownMenuItem>
+                  Reply
+                </Button>
               )
             }
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </div>
+        </div>
+        {
+          comment.user.clerkId !== userId && variant === "comment" && (
+            <DropdownMenu
+              modal={false}
+            >
+              <DropdownMenuTrigger
+                asChild
+              >
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="size-8"
+                >
+                  <MoreVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+              >
+                <DropdownMenuItem
+                  onClick={() => setIsReplyOpen(true)}
+                >
+                  <MessageSquareIcon
+                    className="size-4"
+                  />
+                  Reply
+                </DropdownMenuItem>
+                {
+                  comment.user.clerkId === userId
+                  && (
+                    <DropdownMenuItem
+                      onClick={() => remove.mutate({ id: comment.id })}
+                    >
+                      <Trash2Icon
+                        className="size-4"
+                      />
+                      Delete
+                    </DropdownMenuItem>
+                  )
+                }
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )
+        }
       </div>
+      {
+        isReplyOpen && variant === "comment"
+        && (
+          <div
+            className="mt-14 pl-14"
+          >
+            <CommentForm
+              videoId={comment.videoId}
+              parentId={comment.id}
+              variant="reply"
+              onCancel={() => {
+                setIsReplyOpen(false);
+              }}
+              onSuccess={() => {
+                setIsReplyOpen(false);
+                setIsRepliesOpen(true);
+              }}
+            />
+          </div>
+        )
+      }
+      {
+        comment.replyCount > 0 && variant === "comment"
+        && (
+          <div
+            className="pl-14"
+          >
+            <Button
+              size="sm"
+              variant="tertiary"
+              onClick={() => setIsRepliesOpen((current) => !current)}
+            >
+              {isRepliesOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
+              {comment.replyCount} replies
+            </Button>
+          </div>
+        )
+      }
+      {
+        comment.replyCount > 0 && variant === "comment" && isRepliesOpen && (
+          <CommentReplies
+            videoId={comment.videoId}
+            parentId={comment.id}
+          />
+        )
+      }
     </div>
   )
 }
