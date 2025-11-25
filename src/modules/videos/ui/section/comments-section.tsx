@@ -1,7 +1,6 @@
 "use client"
 
 import { InfinityScroll } from "@/components/infinity-scroll";
-import { Skeleton } from "@/components/ui/skeleton";
 import { DEFAULT_LIMIT } from "@/constants";
 import { CommentForm } from "@/modules/comments/components/comment-form";
 import { CommentItem } from "@/modules/comments/components/comment-item";
