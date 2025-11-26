@@ -12,7 +12,7 @@ interface VideoMenuProps {
 }
 
 const VideoMenu: FC<VideoMenuProps> = (props) => {
-  const { videoId, variant, onRemove } = props;
+  const { videoId, variant = "ghost", onRemove } = props;
 
   const onShare = () => {
     const fullUrl = `${process.env.VERCEL_URL || "http://localhost:3000"}/videos/${videoId}`

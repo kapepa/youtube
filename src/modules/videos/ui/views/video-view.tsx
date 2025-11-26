@@ -26,7 +26,9 @@ const VideoView: FC<VideoViewProps> = (props) => {
           <div
             className="xl:hidden block mt-4"
           >
-            <SuggestionsSection />
+            <SuggestionsSection
+              videoId={videoId}
+            />
           </div>
           <CommentsSection
             videoId={videoId}
@@ -35,7 +37,9 @@ const VideoView: FC<VideoViewProps> = (props) => {
         <div
           className="hidden xl:block w-full xl:w-[380px] 2xl:w-[460px] shrink"
         >
-          <SuggestionsSection />
+          <SuggestionsSection
+            videoId={videoId}
+          />
         </div>
       </div>
     </div>
