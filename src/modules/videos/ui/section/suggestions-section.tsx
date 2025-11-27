@@ -2,10 +2,11 @@
 
 import { DEFAULT_LIMIT } from "@/constants";
 import { trpc } from "@/trpc/client";
-import { FC } from "react";
-import { VideoRowCard } from "../../components/video-row-card";
-import { VideoGridCard } from "../../components/video-grid-card";
+import { FC, Suspense } from "react";
+import { VideoRowCard, VideoRowCardSkeleton } from "../../components/video-row-card";
+import { VideoGridCard, VideoGridCardSkeleton } from "../../components/video-grid-card";
 import { InfinityScroll } from "@/components/infinity-scroll";
+import { ErrorBoundary } from "react-error-boundary";
 
 interface SuggestionsSectionProps {
   videoId: string,
@@ -13,6 +14,55 @@ interface SuggestionsSectionProps {
 }
 
 const SuggestionsSection: FC<SuggestionsSectionProps> = (props) => {
+  const { videoId, isManual } = props;
+
+  return (
+    <Suspense
+      fallback={<SuggestionsSectionSkeleton />}
+    >
+      <ErrorBoundary
+        fallback={<p>Error</p>}
+      >
+        <SuggestionsSectionSuspense
+          videoId={videoId}
+          isManual={isManual}
+        />
+      </ErrorBoundary>
+    </Suspense>
+  )
+}
+
+const SuggestionsSectionSkeleton: FC = () => {
+  return (
+    <>
+      <div
+        className="hidden md:block space-y-3"
+      >
+        {
+          Array.from({ length: 6 }).map((_, inddex) => (
+            <VideoRowCardSkeleton
+              key={inddex}
+              size="compact"
+            />
+          ))
+        }
+      </div>
+      <div
+        className="block md:hidden space-y-10"
+      >
+        {
+          Array.from({ length: 6 }).map((_, index) => (
+            <VideoGridCardSkeleton
+              key={index}
+            />
+          ))
+        }
+      </div>
+    </>
+  )
+}
+
+const SuggestionsSectionSuspense: FC<SuggestionsSectionProps> = (props) => {
   const { videoId, isManual } = props;
   const [suggestions, query] = trpc.suggestions.getMany.useSuspenseInfiniteQuery({
     limit: DEFAULT_LIMIT,
@@ -58,4 +108,4 @@ const SuggestionsSection: FC<SuggestionsSectionProps> = (props) => {
   )
 }
 
-export { SuggestionsSection }
+export { SuggestionsSection, SuggestionsSectionSuspense, SuggestionsSectionSkeleton }

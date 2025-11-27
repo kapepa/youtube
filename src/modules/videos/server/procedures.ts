@@ -115,6 +115,45 @@ export const videosRouter = createTRPCRouter({
 
       return workflowRunId
     }),
+  revalidate: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user;
+
+      const [existingVideo] = await db
+        .select()
+        .from(videosTable)
+        .where(
+          and(
+            eq(videosTable.id, input.id),
+            eq(videosTable.userId, userId)
+          )
+        );
+
+      if (!existingVideo) throw new TRPCError({ code: "NOT_FOUND" });
+      if (!existingVideo.muxUploadId) throw new TRPCError({ code: "BAD_REQUEST" });
+
+      const upload = await mux.video.uploads.retrieve(existingVideo.muxUploadId);
+      if (!upload.asset_id) throw new TRPCError({ code: "BAD_REQUEST" });
+
+      const asset = await mux.video.assets.retrieve(upload.asset_id);
+      if (!asset) throw new TRPCError({ code: "BAD_REQUEST" });
+
+      const playbackId = asset.playback_ids?.[0].id;
+      const duration = asset.duration ? Math.round(asset.duration * 1000) : 0;
+
+      const [updateVideo] = await db
+        .update(videosTable)
+        .set({
+          muxStatus: asset.status,
+          muxAssetId: asset.id,
+          muxPaybackId: playbackId,
+          duration: duration,
+        })
+        .returning();
+
+      return updateVideo;
+    }),
   restoreThumbnail: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {

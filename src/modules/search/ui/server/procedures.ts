@@ -1,33 +1,24 @@
 import { db } from "@/db";
 import { usersTable, videoReactionsTable, videosTable, videoViewsTable } from "@/db/schema";
 import { baseProcedure, createTRPCRouter } from "@/trpc/init";
-import { TRPCError } from "@trpc/server";
-import { eq, and, or, lt, desc, getTableColumns, not } from "drizzle-orm";
+import { eq, and, or, lt, desc, ilike, getTableColumns } from "drizzle-orm";
 import { z } from "zod";
 
-export const suggestionsRouter = createTRPCRouter({
+export const searchRouter = createTRPCRouter({
   getMany: baseProcedure
     .input(
       z.object({
-        videoId: z.string().uuid(),
+        query: z.string().nullish(),
+        categoryId: z.string().nullish(),
         cursor: z.object({
-          id: z.string().uuid(),
+          id: z.string(),
           updateAt: z.date(),
         }).nullish(),
         limit: z.number().min(1).max(100).default(20)
       })
     )
     .query(async ({ input }) => {
-      const { limit, cursor, videoId } = input;
-
-      const [existingVideo] = await db
-        .select()
-        .from(videosTable)
-        .where(
-          eq(videosTable.id, videoId)
-        )
-
-      if (!existingVideo) throw new TRPCError({ code: "NOT_FOUND" })
+      const { cursor, limit, query, categoryId } = input;
 
       const data = await db
         .select({
@@ -47,13 +38,8 @@ export const suggestionsRouter = createTRPCRouter({
         .innerJoin(usersTable, eq(videosTable.userId, usersTable.id))
         .where(
           and(
-            not(
-              eq(videosTable.id, existingVideo.id)
-            ),
-            eq(videosTable.visbility, "public"),
-            existingVideo.categoryId
-              ? eq(videosTable.categoryId, existingVideo.categoryId)
-              : undefined,
+            ilike(videosTable.title, `%${query}%`),
+            categoryId ? eq(videosTable.categoryId, categoryId) : undefined,
             cursor
               ? or(
                 lt(videosTable.updateAt, cursor.updateAt),
@@ -63,7 +49,7 @@ export const suggestionsRouter = createTRPCRouter({
                 )
               )
               : undefined
-          ),
+          )
         )
         .orderBy(desc(videosTable.updateAt), desc(videosTable.id))
         .limit(limit + 1);

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { APP_URL } from "@/constants";
 import { DropdownMenu, DropdownMenuContent } from "@radix-ui/react-dropdown-menu";
 import { ListPlusIcon, MoreVerticalIcon, ShareIcon, Trash2Icon } from "lucide-react";
 import { FC } from "react";
@@ -15,7 +16,7 @@ const VideoMenu: FC<VideoMenuProps> = (props) => {
   const { videoId, variant = "ghost", onRemove } = props;
 
   const onShare = () => {
-    const fullUrl = `${process.env.VERCEL_URL || "http://localhost:3000"}/videos/${videoId}`
+    const fullUrl = `${APP_URL || "http://localhost:3000"}/videos/${videoId}`
     navigator.clipboard.writeText(fullUrl);
     toast.success("Link copied to the clipboard")
   }
