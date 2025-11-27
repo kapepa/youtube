@@ -4,25 +4,24 @@ import { Button } from "@/components/ui/button";
 import { APP_URL } from "@/constants";
 import { ROUTERS } from "@/lib/routers";
 import { SearchIcon, XIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FC, FormEvent, useState } from "react";
 
-interface SearchInputProps {
-  className?: string
-}
-
-const SearchInput: FC<SearchInputProps> = (props) => {
-  const { className } = props;
+const SearchInput: FC = () => {
   const router = useRouter();
-  const [value, setValue] = useState<string>("");
+  const searchParams = useSearchParams();
+  const query = searchParams.get("query") || "";
+  const categoryId = searchParams.get("categoryId") || "";
+  const [value, setValue] = useState<string>(query);
 
   const handleSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const url = new URL(`${ROUTERS.SEARCH}`, APP_URL ? `https://${APP_URL}` : "http://localhost:3000")
+    const url = new URL(`${ROUTERS.SEARCH}`, APP_URL)
     const newQuery = value.trim();
 
     url.searchParams.set("query", encodeURIComponent(newQuery));
     if (newQuery === "") url.searchParams.delete("query");
+    if (categoryId) url.searchParams.set("categoryId", categoryId);
 
     setValue(newQuery);
     router.push(url.toString());
