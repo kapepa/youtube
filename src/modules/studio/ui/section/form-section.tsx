@@ -136,7 +136,7 @@ const FormSectionSuspense: FC<FormSectionProps> = (props) => {
     update.mutate(values);
   }
 
-  const fullUrl = `${APP_URL || "http://localhost:3000"}${ROUTERS.VIDEOS}/${videoId}`;
+  const fullUrl = `${APP_URL}${ROUTERS.VIDEOS}/${videoId}`;
   const [isCopied, setIsCopied] = useState<boolean>(false);
 
   const onCopy = async () => {
