@@ -6,10 +6,33 @@ import { UserAvatar } from "@/components/user-avatar";
 import Link from "next/link";
 import { UserInfo } from "@/modules/users/components/user-info";
 import { VideoMenu } from "./video-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface VideoInfoProps {
   data: VideoGetManyOutput["items"][number],
   onRemove?: () => void,
+}
+
+const VideoInfoSkeleton: FC = () => {
+  return (
+    <div
+      className="flex gap-3"
+    >
+      <Skeleton
+        className="size-10 shrink-0 rounded-full"
+      />
+      <div
+        className="min-w-0 flex-1 space-y-2"
+      >
+        <Skeleton
+          className="h-5 w-[90%]"
+        />
+        <Skeleton
+          className="h-5 w-[70%]"
+        />
+      </div>
+    </div>
+  )
 }
 
 const VideoInfo: FC<VideoInfoProps> = (props) => {
@@ -77,4 +100,4 @@ const VideoInfo: FC<VideoInfoProps> = (props) => {
   )
 }
 
-export { VideoInfo }
+export { VideoInfo, VideoInfoSkeleton }

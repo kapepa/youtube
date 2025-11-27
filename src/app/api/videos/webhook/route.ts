@@ -61,9 +61,6 @@ export const POST = async (req: Request) => {
         const { key: thumbnailKey, url: thumbnailUrl } = uploadedThumbnail.data;
         const { key: previewKey, url: previewUrl } = uploadedPreview.data;
 
-        console.log("uploadedPreview.data", uploadedThumbnail.data)
-        console.log("uploadedPreview.data", uploadedPreview.data)
-
         await db
           .update(videosTable)
           .set({

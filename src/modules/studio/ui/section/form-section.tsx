@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { THUMBNAIL_FALLBACK } from "@/modules/videos/constants";
 import { ThumbnailUploadModal } from "../../components/thumbnail-upload-modal";
+import { APP_URL } from "@/constants";
 
 interface FormSectionProps {
   videoId: string,
@@ -81,6 +82,16 @@ const FormSectionSuspense: FC<FormSectionProps> = (props) => {
       toast.error("Something went wrong.")
     }
   });
+  const revalidate = trpc.videos.revalidate.useMutation({
+    onSuccess: () => {
+      utils.studio.getMany.invalidate();
+      utils.studio.getOne.invalidate({ id: videoId });
+      toast.success("Video revalidate");
+    },
+    onError: () => {
+      toast.error("Something went wrong.")
+    }
+  });
   const restoreThumbnail = trpc.videos.restoreThumbnail.useMutation({
     onSuccess: () => {
       toast.success("Background job started", { description: "This may take some time" });
@@ -125,7 +136,7 @@ const FormSectionSuspense: FC<FormSectionProps> = (props) => {
     update.mutate(values);
   }
 
-  const fullUrl = `${process.env.VERCEL_URL || "http://localhost:3000"}${ROUTERS.VIDEOS}/${videoId}`;
+  const fullUrl = `${APP_URL || "http://localhost:3000"}${ROUTERS.VIDEOS}/${videoId}`;
   const [isCopied, setIsCopied] = useState<boolean>(false);
 
   const onCopy = async () => {
@@ -188,6 +199,14 @@ const FormSectionSuspense: FC<FormSectionProps> = (props) => {
                 <DropdownMenuContent
                   align="end"
                 >
+                  <DropdownMenuItem
+                    onClick={() => revalidate.mutate({ id: videoId })}
+                  >
+                    <RotateCcwIcon
+                      className="size-4 mr-2"
+                    />
+                    Revalidate
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => remove.mutate({ id: videoId })}
                   >
