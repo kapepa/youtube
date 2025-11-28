@@ -15,9 +15,9 @@ const items: NavItemInt[] = [
     title: "Home",
   },
   {
-    url: ROUTERS.FEED_SUBSCRIPTIONS,
+    url: ROUTERS.FEED_SUBSCRIBED,
     icon: PlaySquareIcon,
-    title: "Subscriptions",
+    title: "Subscribed",
     auth: true,
   },
   {
