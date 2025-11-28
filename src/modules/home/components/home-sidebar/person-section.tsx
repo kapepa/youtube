@@ -7,22 +7,23 @@ import { HistoryIcon, ListVideoIcon, ThumbsUpIcon } from "lucide-react";
 import { useAuth, useClerk } from "@clerk/nextjs";
 import Link from "next/link";
 import { FC } from "react";
+import { usePathname } from "next/navigation";
 
 const items: NavItemInt[] = [
   {
-    url: ROUTERS.PLAYLIST_HISTORY,
+    url: ROUTERS.PLAYLISTS_HISTORY,
     icon: HistoryIcon,
     title: "History",
     auth: true,
   },
   {
-    url: ROUTERS.PLAYLIST_LIKED,
+    url: ROUTERS.PLAYLISTS_LIKED,
     icon: ThumbsUpIcon,
     title: "Liked video",
     auth: true,
   },
   {
-    url: ROUTERS.PLAYLIST,
+    url: ROUTERS.PLAYLISTS,
     icon: ListVideoIcon,
     title: "All playlists",
     auth: true,
@@ -31,7 +32,8 @@ const items: NavItemInt[] = [
 
 const PersoneSection: FC = () => {
   const clerk = useClerk();
-  const { isSignedIn } = useAuth()
+  const { isSignedIn } = useAuth();
+  const pathname = usePathname();
 
   return (
     <SidebarGroup>
@@ -48,7 +50,7 @@ const PersoneSection: FC = () => {
                 <SidebarMenuButton
                   tooltip={item.title}
                   asChild
-                  isActive={false}
+                  isActive={pathname === item.url}
                   onClick={(e) => {
                     if (!isSignedIn && item.auth) {
                       e.preventDefault();

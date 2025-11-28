@@ -6,6 +6,7 @@ import { NavItemInt } from "@/lib/types/nav-item";
 import { useAuth, useClerk } from "@clerk/nextjs";
 import { FlameIcon, HomeIcon, PlaySquareIcon } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { FC } from "react";
 
 const items: NavItemInt[] = [
@@ -29,7 +30,8 @@ const items: NavItemInt[] = [
 
 const MainSection: FC = () => {
   const clerk = useClerk();
-  const { isSignedIn } = useAuth()
+  const { isSignedIn } = useAuth();
+  const pathname = usePathname();
 
   return (
     <SidebarGroup>
@@ -43,7 +45,7 @@ const MainSection: FC = () => {
                 <SidebarMenuButton
                   tooltip={item.title}
                   asChild
-                  isActive={false}
+                  isActive={pathname === item.url}
                   onClick={(e) => {
                     if (!isSignedIn && item.auth) {
                       e.preventDefault();

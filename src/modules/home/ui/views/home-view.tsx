@@ -1,8 +1,7 @@
 "use client"
 
-import { FC, Suspense } from "react";
+import { FC } from "react";
 import { CategoriesSection } from "../sections/categories-section";
-import { ErrorBoundary } from "react-error-boundary";
 
 interface HomeViewProps {
   categoryId?: string
