@@ -8,8 +8,8 @@ export enum ROUTERS {
   SEARCH = "/search",
   FEED_TRENDING = "/feed/trending",
   FEED_SUBSCRIBED = "/feed/subscribed",
-  PLAYLIST = "/playlist",
-  PLAYLIST_LIKED = "/playlist/liked",
-  PLAYLIST_HISTORY = "/playlist/history",
+  PLAYLISTS = "/playlists",
+  PLAYLISTS_LIKED = "/playlists/liked",
+  PLAYLISTS_HISTORY = "/playlists/history",
   PROTECTED = "/protected",
 }

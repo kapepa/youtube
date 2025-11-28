@@ -6,7 +6,7 @@ import { NextPage } from "next";
 export const dynamic = "force-dynamic"
 
 interface SearchPageProps {
-  searchParams: Promise<{ // Fixed: searchParamas -> searchParams
+  searchParams: Promise<{
     query: string | undefined,
     categoryId: string | undefined,
   }>
