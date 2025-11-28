@@ -7,7 +7,7 @@ export enum ROUTERS {
   VIDEOS = "/videos",
   SEARCH = "/search",
   FEED_TRENDING = "/feed/trending",
-  FEED_SUBSCRIPTIONS = "/feed/subscriptions",
+  FEED_SUBSCRIBED = "/feed/subscribed",
   PLAYLIST = "/playlist",
   PLAYLIST_LIKED = "/playlist/liked",
   PLAYLIST_HISTORY = "/playlist/history",

@@ -1,14 +1,215 @@
+import { DEFAULT_LIMIT } from "@/constants";
 import { db } from "@/db";
 import { subscriptionsTable, usersTable, videoReactionsTable, videosTable, videoUpdateSchema, videoViewsTable } from "@/db/schema";
 import { mux } from "@/lib/mux";
 import { workflow } from "@/lib/qstash";
 import { baseProcedure, createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { and, eq, getTableColumns, inArray, isNotNull } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, inArray, isNotNull, lt, or } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import z from "zod";
 
 export const videosRouter = createTRPCRouter({
+  getManySubscribed: protectedProcedure
+    .input(
+      z.object({
+        cursor: z.object({
+          id: z.string(),
+          updateAt: z.date(),
+        }).nullish(),
+        limit: z.number().min(1).max(100).default(DEFAULT_LIMIT)
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user;
+      const { cursor, limit } = input;
+
+      const viewerSubscriptions = db.$with("viewer_subscriptions").as(
+        db
+          .select({ userId: subscriptionsTable.creatorId })
+          .from(subscriptionsTable)
+          .where(eq(subscriptionsTable.viewerId, userId))
+      );
+
+      const data = await db
+        .with(viewerSubscriptions)
+        .select({
+          ...getTableColumns(videosTable),
+          user: usersTable,
+          viewCount: db.$count(videoViewsTable, eq(videoViewsTable.videoId, videosTable.id)),
+          likeCount: db.$count(videoReactionsTable, and(
+            eq(videoReactionsTable.videoId, videosTable.id),
+            eq(videoReactionsTable.type, "like")
+          )),
+          dislikeCount: db.$count(videoReactionsTable, and(
+            eq(videoReactionsTable.videoId, videosTable.id),
+            eq(videoReactionsTable.type, "dislike")
+          )),
+        })
+        .from(videosTable)
+        .innerJoin(usersTable, eq(videosTable.userId, usersTable.id))
+        .innerJoin(viewerSubscriptions, eq(viewerSubscriptions.userId, usersTable.id))
+        .where(
+          and(
+            eq(videosTable.visbility, "public"),
+            cursor
+              ? or(
+                lt(videosTable.updateAt, cursor.updateAt),
+                and(
+                  eq(videosTable.updateAt, cursor.updateAt),
+                  lt(videosTable.id, cursor.id),
+                )
+              )
+              : undefined
+          )
+        )
+        .orderBy(desc(videosTable.updateAt), desc(videosTable.id))
+        .limit(limit + 1);
+
+      const hasMore = data.length > limit;
+      const items = hasMore ? data.slice(0, -1) : data;
+      const lastItem = items[items.length - 1];
+      const nextCursor = hasMore && lastItem
+        ? {
+          id: lastItem.id,
+          updateAt: lastItem.updateAt,
+        }
+        : null;
+
+      return {
+        items,
+        nextCursor,
+      };
+    }),
+  getManyTrending: baseProcedure
+    .input(
+      z.object({
+        cursor: z.object({
+          id: z.string(),
+          viewCount: z.number(),
+        }).nullish(),
+        limit: z.number().min(1).max(100).default(DEFAULT_LIMIT)
+      })
+    )
+    .query(async ({ input }) => {
+      const { cursor, limit } = input;
+
+      const viewCountSubquery = db.$count(
+        videoViewsTable,
+        eq(videoViewsTable.videoId, videosTable.id)
+      )
+
+      const data = await db
+        .select({
+          ...getTableColumns(videosTable),
+          user: usersTable,
+          viewCount: viewCountSubquery,
+          likeCount: db.$count(videoReactionsTable, and(
+            eq(videoReactionsTable.videoId, videosTable.id),
+            eq(videoReactionsTable.type, "like")
+          )),
+          dislikeCount: db.$count(videoReactionsTable, and(
+            eq(videoReactionsTable.videoId, videosTable.id),
+            eq(videoReactionsTable.type, "dislike")
+          )),
+        })
+        .from(videosTable)
+        .innerJoin(usersTable, eq(videosTable.userId, usersTable.id))
+        .where(
+          and(
+            eq(videosTable.visbility, "public"),
+            cursor
+              ? or(
+                lt(viewCountSubquery, cursor.viewCount),
+                and(
+                  eq(viewCountSubquery, cursor.viewCount),
+                  lt(videosTable.id, cursor.id),
+                )
+              )
+              : undefined
+          )
+        )
+        .orderBy(desc(viewCountSubquery), desc(videosTable.id))
+        .limit(limit + 1);
+
+      const hasMore = data.length > limit;
+      const items = hasMore ? data.slice(0, -1) : data;
+      const lastItem = items[items.length - 1];
+      const nextCursor = hasMore && lastItem
+        ? {
+          id: lastItem.id,
+          viewCount: lastItem.viewCount,
+        }
+        : null;
+
+      return {
+        items,
+        nextCursor,
+      };
+    }),
+  getMany: baseProcedure
+    .input(
+      z.object({
+        categoryId: z.string().nullish(),
+        cursor: z.object({
+          id: z.string(),
+          updateAt: z.date(),
+        }).nullish(),
+        limit: z.number().min(1).max(100).default(DEFAULT_LIMIT)
+      })
+    )
+    .query(async ({ input }) => {
+      const { cursor, limit, categoryId } = input;
+
+      const data = await db
+        .select({
+          ...getTableColumns(videosTable),
+          user: usersTable,
+          viewCount: db.$count(videoViewsTable, eq(videoViewsTable.videoId, videosTable.id)),
+          likeCount: db.$count(videoReactionsTable, and(
+            eq(videoReactionsTable.videoId, videosTable.id),
+            eq(videoReactionsTable.type, "like")
+          )),
+          dislikeCount: db.$count(videoReactionsTable, and(
+            eq(videoReactionsTable.videoId, videosTable.id),
+            eq(videoReactionsTable.type, "dislike")
+          )),
+        })
+        .from(videosTable)
+        .innerJoin(usersTable, eq(videosTable.userId, usersTable.id))
+        .where(
+          and(
+            eq(videosTable.visbility, "public"),
+            categoryId ? eq(videosTable.categoryId, categoryId) : undefined,
+            cursor
+              ? or(
+                lt(videosTable.updateAt, cursor.updateAt),
+                and(
+                  eq(videosTable.updateAt, cursor.updateAt),
+                  lt(videosTable.id, cursor.id),
+                )
+              )
+              : undefined
+          )
+        )
+        .orderBy(desc(videosTable.updateAt), desc(videosTable.id))
+        .limit(limit + 1);
+
+      const hasMore = data.length > limit;
+      const items = hasMore ? data.slice(0, -1) : data;
+      const lastItem = items[items.length - 1];
+      const nextCursor = hasMore && lastItem
+        ? {
+          id: lastItem.id,
+          updateAt: lastItem.updateAt,
+        }
+        : null;
+
+      return {
+        items,
+        nextCursor,
+      };
+    }),
   getOne: baseProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
