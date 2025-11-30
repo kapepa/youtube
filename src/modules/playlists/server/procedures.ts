@@ -1,11 +1,88 @@
 import { DEFAULT_LIMIT } from "@/constants";
 import { db } from "@/db";
-import { usersTable, videoReactionsTable, videosTable, videoViewsTable } from "@/db/schema";
+import { playlistsTable, playlistVideosTable, usersTable, videoReactionsTable, videosTable, videoViewsTable } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure, baseProcedure } from "@/trpc/init";
+import { TRPCError } from "@trpc/server";
 import { and, desc, eq, getTableColumns, lt, or } from "drizzle-orm";
 import z from "zod";
 
 export const playListsRouter = createTRPCRouter({
+  getMany: protectedProcedure
+    .input(
+      z.object({
+        cursor: z.object({
+          id: z.string(),
+          updateAt: z.date(),
+        }).nullish(),
+        limit: z.number().min(1).max(100).default(DEFAULT_LIMIT)
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user;
+      const { cursor, limit } = input;
+
+      const data = await db
+        .select({
+          ...getTableColumns(playlistsTable),
+          videoCount: db.$count(
+            playlistVideosTable,
+            eq(playlistVideosTable.playlistId, playlistsTable.id)
+          ),
+          user: usersTable
+        })
+        .from(playlistsTable)
+        .innerJoin(usersTable, eq(playlistsTable.userId, usersTable.id))
+        .where(
+          and(
+            eq(playlistsTable.userId, userId),
+            cursor
+              ? or(
+                lt(playlistsTable.updateAt, cursor.updateAt),
+                and(
+                  eq(playlistsTable.updateAt, cursor.updateAt),
+                  lt(playlistsTable.id, cursor.id),
+                )
+              )
+              : undefined
+          )
+        )
+        .orderBy(desc(playlistsTable.updateAt), desc(playlistsTable.id))
+        .limit(limit + 1);
+
+      const hasMore = data.length > limit;
+      const items = hasMore ? data.slice(0, -1) : data;
+      const lastItem = items[items.length - 1];
+      const nextCursor = hasMore && lastItem
+        ? {
+          id: lastItem.id,
+          updateAt: lastItem.updateAt,
+        }
+        : null;
+
+      return {
+        items,
+        nextCursor,
+      };
+    }),
+  create: protectedProcedure
+    .input(z.object({
+      name: z.string().min(1)
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { name } = input;
+      const { id: userId } = ctx.user;
+
+      const [createdPlaylist] = await db
+        .insert(playlistsTable)
+        .values({
+          name,
+          userId,
+        })
+        .returning();
+
+      if (!createdPlaylist) throw new TRPCError({ code: "BAD_REQUEST" });
+      return createdPlaylist;
+    }),
   getLiked: protectedProcedure
     .input(
       z.object({

@@ -1,0 +1,61 @@
+import { FC } from "react"
+import { PlaylistGetManyOutput } from "../../types";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface PlaylistInfoProps {
+  data: PlaylistGetManyOutput["items"][number],
+}
+
+const PlaylistInfoSkeleton: FC = () => {
+  return (
+    <div
+      className="flex gap-3"
+    >
+      <div
+        className="min-w-0 flex-1 space-y-2"
+      >
+        <Skeleton
+          className="h-5 w-[90%]"
+        />
+        <Skeleton
+          className="h-5 w-[70%]"
+        />
+        <Skeleton
+          className="h-5 w-[50%]"
+        />
+      </div>
+    </div>
+  )
+}
+
+const PlaylistInfo: FC<PlaylistInfoProps> = (props) => {
+  const { data } = props;
+
+  return (
+    <div
+      className="flex gap-3"
+    >
+      <div
+        className="min-w-0 flex-1"
+      >
+        <h3
+          className="font-medium line-clamp-1 lg:line-clamp-2 text-sm wrap-break-word"
+        >
+          {data.name}
+        </h3>
+        <p
+          className="text-sm text-muted-foreground"
+        >
+          Playlist
+        </p>
+        <p
+          className="text-sm text-muted-foreground font-semibold hover:text-primary"
+        >
+          View full playlist
+        </p>
+      </div>
+    </div>
+  )
+}
+
+export { PlaylistInfo, PlaylistInfoSkeleton }
