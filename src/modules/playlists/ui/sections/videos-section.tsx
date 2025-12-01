@@ -7,22 +7,29 @@ import { VideoRowCard, VideoRowCardSkeleton } from "@/modules/videos/components/
 import { trpc } from "@/trpc/client";
 import { FC, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { toast } from "sonner";
 
-const HistoryVideosSection: FC = () => {
+interface VideosSectionSkeletonProps {
+  playlistId: string
+}
+
+const VideosSection: FC<VideosSectionSkeletonProps> = (props) => {
   return (
     <Suspense
-      fallback={<HistoryVideosSectionSkeleton />}
+      fallback={<VideosSectionSkeleton />}
     >
       <ErrorBoundary
         fallback={<p>Error</p>}
       >
-        <HistoryVideosSectionSuspense />
+        <VideosSectionSuspense
+          {...props}
+        />
       </ErrorBoundary>
     </Suspense>
   )
 }
 
-const HistoryVideosSectionSkeleton: FC = () => {
+const VideosSectionSkeleton: FC = () => {
   return (
     <div>
       <div
@@ -52,12 +59,27 @@ const HistoryVideosSectionSkeleton: FC = () => {
   )
 }
 
-const HistoryVideosSectionSuspense: FC = () => {
-  const [videos, query] = trpc.playlists.getHistory.useSuspenseInfiniteQuery({
-    limit: DEFAULT_LIMIT
+const VideosSectionSuspense: FC<VideosSectionSkeletonProps> = (props) => {
+  const { playlistId } = props;
+  const utils = trpc.useUtils();
+  const [videos, query] = trpc.playlists.getVideos.useSuspenseInfiniteQuery({
+    limit: DEFAULT_LIMIT, playlistId,
   }, {
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   })
+
+  const removeVideo = trpc.playlists.removeVideo.useMutation({
+    onSuccess: (data) => {
+      toast.success("Video removed from playlist");
+      utils.playlists.getMany.invalidate();
+      utils.playlists.getManyForVideo.invalidate({ videoId: data.videoId });
+      utils.playlists.getOne.invalidate({ id: data.playlistId });
+      utils.playlists.getVideos.invalidate({ playlistId: data.playlistId })
+    },
+    onError: () => {
+      toast.error("Something went wrong")
+    }
+  });
 
   return (
     <>
@@ -71,6 +93,7 @@ const HistoryVideosSectionSuspense: FC = () => {
               <VideoGridCard
                 key={video.id}
                 data={video}
+                onRemove={() => removeVideo.mutate({ playlistId, videoId: video.id })}
               />
             ))
         }
@@ -86,6 +109,7 @@ const HistoryVideosSectionSuspense: FC = () => {
                 key={video.id}
                 data={video}
                 size="compact"
+                onRemove={() => removeVideo.mutate({ playlistId, videoId: video.id })}
               />
             ))
         }
@@ -99,4 +123,4 @@ const HistoryVideosSectionSuspense: FC = () => {
   )
 }
 
-export { HistoryVideosSection }
+export { VideosSection }

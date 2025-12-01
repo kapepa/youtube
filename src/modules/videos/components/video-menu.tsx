@@ -67,7 +67,7 @@ const VideoMenu: FC<VideoMenuProps> = (props) => {
           {
             onRemove && (
               <DropdownMenuItem
-                onClick={() => { }}
+                onClick={onRemove}
               >
                 <Trash2Icon
                   className="mr-2 size-4"

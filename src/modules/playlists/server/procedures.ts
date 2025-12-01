@@ -1,12 +1,140 @@
 import { DEFAULT_LIMIT } from "@/constants";
 import { db } from "@/db";
 import { playlistsTable, playlistVideosTable, usersTable, videoReactionsTable, videosTable, videoViewsTable } from "@/db/schema";
-import { createTRPCRouter, protectedProcedure, baseProcedure } from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, getTableColumns, lt, or, sql } from "drizzle-orm";
 import z from "zod";
 
 export const playListsRouter = createTRPCRouter({
+  remove: protectedProcedure
+    .input(z.object({
+      id: z.string().uuid(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { id } = input;
+      const { id: userId } = ctx.user;
+
+      const [deletedPlaylist] = await db
+        .delete(playlistsTable)
+        .where(
+          and(
+            eq(playlistsTable.id, id),
+            eq(playlistsTable.userId, userId)
+          )
+        )
+        .returning();
+
+      if (!deletedPlaylist) throw new TRPCError({ code: "NOT_FOUND" })
+
+      return deletedPlaylist;
+    }),
+  getOne: protectedProcedure
+    .input(z.object({
+      id: z.string().uuid(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { id } = input;
+      const { id: userId } = ctx.user;
+
+      const [existingPlaylist] = await db
+        .select()
+        .from(playlistsTable)
+        .where(and(
+          eq(playlistsTable.id, id),
+          eq(playlistsTable.userId, userId)
+        ));
+
+      if (!existingPlaylist) throw new TRPCError({ code: "NOT_FOUND" })
+
+      return existingPlaylist;
+    }),
+  getVideos: protectedProcedure
+    .input(
+      z.object({
+        playlistId: z.string().uuid(),
+        cursor: z.object({
+          id: z.string(),
+          updateAt: z.date(),
+        }).nullish(),
+        limit: z.number().min(1).max(100).default(DEFAULT_LIMIT)
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user;
+      const { cursor, limit, playlistId } = input;
+
+      const [existingPlaylist] = await db
+        .select()
+        .from(playlistsTable)
+        .where(and(
+          eq(playlistsTable.id, playlistId),
+          eq(playlistsTable.userId, userId)
+        ));
+
+      if (!existingPlaylist) throw new TRPCError({ code: "NOT_FOUND" })
+
+      const videosFromPlaylist = db.$with("playlist_videos").as(
+        db
+          .select({
+            videoId: playlistVideosTable.videoId,
+          })
+          .from(playlistVideosTable)
+          .where(
+            eq(playlistVideosTable.playlistId, playlistId),
+          )
+      )
+
+      const data = await db
+        .with(videosFromPlaylist)
+        .select({
+          ...getTableColumns(videosTable),
+          user: usersTable,
+          viewCount: db.$count(videoViewsTable, eq(videoViewsTable.videoId, videosTable.id)),
+          likeCount: db.$count(videoReactionsTable, and(
+            eq(videoReactionsTable.videoId, videosTable.id),
+            eq(videoReactionsTable.type, "like")
+          )),
+          dislikeCount: db.$count(videoReactionsTable, and(
+            eq(videoReactionsTable.videoId, videosTable.id),
+            eq(videoReactionsTable.type, "dislike")
+          )),
+        })
+        .from(videosTable)
+        .innerJoin(usersTable, eq(videosTable.userId, usersTable.id))
+        .innerJoin(videosFromPlaylist, eq(videosTable.id, videosFromPlaylist.videoId))
+        .where(
+          and(
+            eq(videosTable.visbility, "public"),
+            cursor
+              ? or(
+                lt(videosTable.updateAt, cursor.updateAt),
+                and(
+                  eq(videosTable.updateAt, cursor.updateAt),
+                  lt(videosTable.id, cursor.id),
+                )
+              )
+              : undefined
+          )
+        )
+        .orderBy(desc(videosTable.updateAt), desc(videosTable.id))
+        .limit(limit + 1);
+
+      const hasMore = data.length > limit;
+      const items = hasMore ? data.slice(0, -1) : data;
+      const lastItem = items[items.length - 1];
+      const nextCursor = hasMore && lastItem
+        ? {
+          id: lastItem.id,
+          updateAt: lastItem.updateAt,
+        }
+        : null;
+
+      return {
+        items,
+        nextCursor,
+      };
+    }),
   removeVideo: protectedProcedure
     .input(z.object({
       videoId: z.string().uuid(),
