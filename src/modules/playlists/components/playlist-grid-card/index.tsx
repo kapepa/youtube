@@ -33,7 +33,7 @@ const PlaylistGridCard: FC<PlaylistGridCardProps> = (props) => {
       >
         <PlaylistThumbnail
           title={data.name}
-          imageUrl={THUMBNAIL_FALLBACK}
+          imageUrl={data.thumbnailUrl || THUMBNAIL_FALLBACK}
           videoCount={data.videoCount}
         />
         <PlaylistInfo
