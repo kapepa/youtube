@@ -3,10 +3,176 @@ import { db } from "@/db";
 import { playlistsTable, playlistVideosTable, usersTable, videoReactionsTable, videosTable, videoViewsTable } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure, baseProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, getTableColumns, lt, or } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, lt, or, sql } from "drizzle-orm";
 import z from "zod";
 
 export const playListsRouter = createTRPCRouter({
+  removeVideo: protectedProcedure
+    .input(z.object({
+      videoId: z.string().uuid(),
+      playlistId: z.string().uuid(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { videoId, playlistId } = input;
+      const { id: userId } = ctx.user;
+
+      const [existingPlaylist] = await db
+        .select()
+        .from(playlistsTable)
+        .where(
+          and(
+            eq(playlistsTable.id, playlistId),
+            eq(playlistsTable.userId, userId),
+          )
+        );
+
+      if (!existingPlaylist) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const [existingVideo] = await db
+        .select()
+        .from(videosTable)
+        .where(eq(videosTable.id, videoId));
+
+      if (!existingVideo) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const [existingPlaylistVideo] = await db
+        .select()
+        .from(playlistVideosTable)
+        .where(
+          and(
+            eq(playlistVideosTable.playlistId, playlistId),
+            eq(playlistVideosTable.videoId, videoId)
+          )
+        );
+
+      if (!existingPlaylistVideo) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const [deletedPlaylistVideo] = await db
+        .delete(playlistVideosTable)
+        .where(
+          and(
+            eq(playlistVideosTable.playlistId, playlistId),
+            eq(playlistVideosTable.videoId, videoId),
+          )
+        )
+        .returning();
+
+      return deletedPlaylistVideo;
+    }),
+  addVideo: protectedProcedure
+    .input(z.object({
+      videoId: z.string().uuid(),
+      playlistId: z.string().uuid(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { videoId, playlistId } = input;
+      const { id: userId } = ctx.user;
+
+      const [existingPlaylist] = await db
+        .select()
+        .from(playlistsTable)
+        .where(
+          and(
+            eq(playlistsTable.id, playlistId),
+            eq(playlistsTable.userId, userId),
+          )
+        );
+
+      if (!existingPlaylist) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const [existingVideo] = await db
+        .select()
+        .from(videosTable)
+        .where(eq(videosTable.id, videoId));
+
+      if (!existingVideo) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const [existingPlaylistVideo] = await db
+        .select()
+        .from(playlistVideosTable)
+        .where(
+          and(
+            eq(playlistVideosTable.playlistId, playlistId),
+            eq(playlistVideosTable.videoId, videoId)
+          )
+        );
+
+      if (existingPlaylistVideo) throw new TRPCError({ code: "CONFLICT" });
+
+      const [createdPlaylistVideo] = await db
+        .insert(playlistVideosTable)
+        .values({ playlistId, videoId })
+        .returning();
+
+      return createdPlaylistVideo;
+    }),
+  getManyForVideo: protectedProcedure
+    .input(
+      z.object({
+        videoId: z.string(),
+        cursor: z.object({
+          id: z.string(),
+          updateAt: z.date(),
+        }).nullish(),
+        limit: z.number().min(1).max(100).default(DEFAULT_LIMIT)
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user;
+      const { cursor, limit, videoId } = input;
+
+      const data = await db
+        .select({
+          ...getTableColumns(playlistsTable),
+          videoCount: db.$count(
+            playlistVideosTable,
+            eq(playlistVideosTable.playlistId, playlistsTable.id)
+          ),
+          user: usersTable,
+          containsVideo: videoId
+            ? sql<boolean>`(
+            SELECT EXISTS (
+              SELECT 1
+              FROM ${playlistVideosTable} pv
+              WHERE pv.playlist_id = ${playlistsTable.id} AND pv.video_id = ${videoId}
+            )
+          )`
+            : sql<boolean>`false`
+        })
+        .from(playlistsTable)
+        .innerJoin(usersTable, eq(playlistsTable.userId, usersTable.id))
+        .where(
+          and(
+            eq(playlistsTable.userId, userId),
+            cursor
+              ? or(
+                lt(playlistsTable.updateAt, cursor.updateAt),
+                and(
+                  eq(playlistsTable.updateAt, cursor.updateAt),
+                  lt(playlistsTable.id, cursor.id),
+                )
+              )
+              : undefined
+          )
+        )
+        .orderBy(desc(playlistsTable.updateAt), desc(playlistsTable.id))
+        .limit(limit + 1);
+
+      const hasMore = data.length > limit;
+      const items = hasMore ? data.slice(0, -1) : data;
+      const lastItem = items[items.length - 1];
+      const nextCursor = hasMore && lastItem
+        ? {
+          id: lastItem.id,
+          updateAt: lastItem.updateAt,
+        }
+        : null;
+
+      return {
+        items,
+        nextCursor,
+      };
+    }),
   getMany: protectedProcedure
     .input(
       z.object({
@@ -28,7 +194,15 @@ export const playListsRouter = createTRPCRouter({
             playlistVideosTable,
             eq(playlistVideosTable.playlistId, playlistsTable.id)
           ),
-          user: usersTable
+          user: usersTable,
+          thumbnailUrl: sql<string | null>`(
+            SELECT v.thumbnail_url
+            FROM ${playlistVideosTable} pv
+            JOIN ${videosTable} v ON v.id = pv.video_id
+            WHERE pv.playlist_id = ${playlistsTable.id}
+            ORDER BY pv.update_at DESC
+            LIMIT 1
+          )`
         })
         .from(playlistsTable)
         .innerJoin(usersTable, eq(playlistsTable.userId, usersTable.id))
