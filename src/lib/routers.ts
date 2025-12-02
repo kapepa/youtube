@@ -1,7 +1,7 @@
 export enum ROUTERS {
   HOME = "/",
-  USER = "/user",
-  USER_CURRENT = "/user/current",
+  USERS = "/users",
+  USERS_CURRENT = "/users/current",
   STUDIO = "/studio",
   STUDIO_VIDEOS = "/studio/videos",
   VIDEOS = "/videos",

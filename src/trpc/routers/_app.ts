@@ -7,6 +7,7 @@ import { searchRouter } from '@/modules/search/ui/server/procedures';
 import { studioRouter } from '@/modules/studio/server/procedures';
 import { subscriptionsRouter } from '@/modules/subscription/server/procedures';
 import { suggestionsRouter } from '@/modules/suggestions/server/procedures';
+import { usersRouter } from '@/modules/users/server/procedures';
 import { videoReactionsRouter } from '@/modules/video-reactions/server/procedure';
 import { videoViewsRouter } from '@/modules/video-views/server/procedure';
 import { videosRouter } from '@/modules/videos/server/procedures';
@@ -23,7 +24,7 @@ export const appRouter = createTRPCRouter({
   commentReactions: commentReactionsRouter,
   suggestions: suggestionsRouter,
   search: searchRouter,
-
+  users: usersRouter,
 });
 
 export type AppRouter = typeof appRouter;

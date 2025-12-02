@@ -47,9 +47,10 @@ export const playlistRelations = relations(playlistsTable, ({ one, many }) => ({
 export const usersTable = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   clerkId: text("clerkId").unique().notNull(),
-  // name: varchar({ length: 255 }).notNull(),
   name: text("name").notNull(),
-  email: varchar({ length: 255 }).unique(),// how to do fidn optional?
+  bannerUrl: text("banner_url"),
+  bannerKey: text("banner_key"),
+  email: varchar({ length: 255 }).unique(),
   imageUrl: text("image_url").notNull(),
   createdAt: timestamp("create_at").defaultNow().notNull(),
   updateAt: timestamp("update_at").defaultNow().notNull(),

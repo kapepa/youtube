@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button";
-import { ClapperboardIcon, UserCircleIcon } from "lucide-react";
+import { ClapperboardIcon, UserCircleIcon, UserIcon } from "lucide-react";
 import { FC } from "react";
 import {
   SignInButton,
@@ -10,7 +10,6 @@ import {
   UserButton,
 } from '@clerk/nextjs'
 import { ROUTERS } from "@/lib/routers";
-import Link from "next/link";
 
 const AuthButton: FC = () => {
   return (
@@ -18,6 +17,11 @@ const AuthButton: FC = () => {
       <SignedIn>
         <UserButton>
           <UserButton.MenuItems>
+            <UserButton.Link
+              label="My profile"
+              href={`${ROUTERS.USERS_CURRENT}`}
+              labelIcon={<UserIcon className="size-4" />}
+            />
             <UserButton.Link
               label="Studio"
               href={ROUTERS.STUDIO}
