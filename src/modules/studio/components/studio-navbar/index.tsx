@@ -19,7 +19,7 @@ const StudioNavbar: FC = () => {
         >
           <SidebarTrigger />
           <Link
-            href={ROUTERS.STUDIO}
+            href={ROUTERS.HOME}
           >
             <div
               className="p-4 flex items-center gap-1"

@@ -24,7 +24,7 @@ const VideoOwner: FC<VideoOwnerProps> = (props) => {
       className="flex items-center sm:items-start justify-between sm:justify-start gap-3 min-w-0"
     >
       <Link
-        href={`${ROUTERS.USER}/${user.id}`}
+        href={`${ROUTERS.USERS}/${user.id}`}
       >
         <div
           className="flex items-center gap-3 min-w-0"

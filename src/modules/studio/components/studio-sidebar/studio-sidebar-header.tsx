@@ -38,7 +38,7 @@ const StudioSidebarHeader: FC = () => {
           tooltip="Your profile"
         >
           <Link
-            href={ROUTERS.USER_CURRENT}
+            href={ROUTERS.USERS_CURRENT}
           >
             <UserAvatar
               size="xs"
@@ -61,7 +61,7 @@ const StudioSidebarHeader: FC = () => {
       className="flex items-center justify-center pb-4"
     >
       <Link
-        href={ROUTERS.USER_CURRENT}
+        href={ROUTERS.USERS_CURRENT}
       >
         <UserAvatar
           name={user?.fullName ?? "User"}

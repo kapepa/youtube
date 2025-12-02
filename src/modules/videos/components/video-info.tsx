@@ -55,9 +55,11 @@ const VideoInfo: FC<VideoInfoProps> = (props) => {
       className="flex gap-3"
     >
       <Link
-        href={`${ROUTERS.VIDEOS}/${data.user.id}`}
+        href={`${ROUTERS.USERS}/${data.user.id}`}
       >
-        <UserAvatar />
+        <UserAvatar
+          imageUrl={data.user.imageUrl}
+        />
       </Link>
       <div
         className="min-w-0 flex-1"
@@ -72,7 +74,7 @@ const VideoInfo: FC<VideoInfoProps> = (props) => {
           </h3>
         </Link>
         <Link
-          href={`${ROUTERS.VIDEOS}/${data.user.id}`}
+          href={`${ROUTERS.USERS}/${data.user.id}`}
         >
           <UserInfo
             name={data.user.name}
