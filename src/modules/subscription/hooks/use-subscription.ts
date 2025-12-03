@@ -17,6 +17,7 @@ const useSubscription = (props: useSubscriptionProps) => {
   const subscribe = trpc.subscriptions.create.useMutation({
     onSuccess: () => {
       toast.success("Subscribed");
+      utils.subscriptions.getMany.invalidate();
       utils.videos.getManySubscribed.invalidate();
       utils.users.getOne.invalidate({ id: userId });
 

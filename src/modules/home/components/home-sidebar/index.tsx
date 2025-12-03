@@ -3,6 +3,8 @@ import { FC } from "react";
 import { MainSection } from "./main-section";
 import { Separator } from "@/components/ui/separator";
 import { PersoneSection } from "./person-section";
+import { SignedIn } from "@clerk/nextjs";
+import { SubscriptionsSection } from "./subscriptions-section";
 
 const HomeSidebar: FC = () => {
   return (
@@ -16,7 +18,12 @@ const HomeSidebar: FC = () => {
         <MainSection />
         <Separator />
         <PersoneSection />
-        <Separator />
+        <SignedIn>
+          <>
+            <Separator />
+            <SubscriptionsSection />
+          </>
+        </SignedIn>
       </SidebarContent>
     </Sidebar>
   )
