@@ -6,7 +6,7 @@ import { NextPage } from "next";
 export const dynamic = "force-dynamic"
 
 const LikedPage: NextPage = () => {
-  void trpc.playLists.getLiked.prefetchInfinite({ limit: DEFAULT_LIMIT });
+  void trpc.playlists.getLiked.prefetchInfinite({ limit: DEFAULT_LIMIT });
 
   return (
     <HydrateClient>

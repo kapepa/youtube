@@ -3,7 +3,10 @@ import { ROUTERS } from './lib/routers';
 
 const isProtectedRoute = createRouteMatcher([
   `${ROUTERS.PROTECTED}(.*)`,
-  "/api/webhooks(.*)"
+  `${ROUTERS.SUBSCRIPTIONS}`,
+  `${ROUTERS.FEED_SUBSCRIBED}`,
+  `${ROUTERS.PLAYLISTS}(.*)`,
+  "/api/webhooks(.*)",
 ])
 
 export default clerkMiddleware(async (auth, req) => {

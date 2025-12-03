@@ -273,11 +273,6 @@ export const videosRouter = createTRPCRouter({
         .where(
           eq(videosTable.id, input.id)
         )
-      // .groupBy(
-      //   videosTable.id,
-      //   usersTable.id,
-      //   viewerReactions.type,
-      // )
 
       if (!existingVideo) throw new TRPCError({ code: "NOT_FOUND" });
       return existingVideo;

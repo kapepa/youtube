@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FC } from "react";
 import { SearchInput } from "./search-input";
 import { AuthButton } from "@/modules/auth/ui/components/auth-button";
+import { ROUTERS } from "@/lib/routers";
 
 const HomeNavbar: FC = () => {
   return (
@@ -18,7 +19,8 @@ const HomeNavbar: FC = () => {
         >
           <SidebarTrigger />
           <Link
-            href="/"
+            href={ROUTERS.HOME}
+            className="hidden md:block"
           >
             <div
               className="p-4 flex items-center gap-1"

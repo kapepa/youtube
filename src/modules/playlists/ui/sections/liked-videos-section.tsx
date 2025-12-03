@@ -53,7 +53,7 @@ const LikedVideosSectionSkeleton: FC = (props) => {
 }
 
 const LikedVideosSectionSuspense: FC = (props) => {
-  const [videos, query] = trpc.playLists.getHistory.useSuspenseInfiniteQuery({
+  const [videos, query] = trpc.playlists.getHistory.useSuspenseInfiniteQuery({
     limit: DEFAULT_LIMIT
   }, {
     getNextPageParam: (lastPage) => lastPage.nextCursor,
