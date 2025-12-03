@@ -6,7 +6,7 @@ import { NextPage } from "next";
 export const dynamic = "force-dynamic"
 
 const HistoryPage: NextPage = () => {
-  void trpc.playLists.getHistory.prefetchInfinite({ limit: DEFAULT_LIMIT });
+  void trpc.playlists.getHistory.prefetchInfinite({ limit: DEFAULT_LIMIT });
   void trpc.studio.getMany.prefetchInfinite({ limit: DEFAULT_LIMIT });
 
   return (

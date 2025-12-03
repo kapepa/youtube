@@ -37,7 +37,7 @@ const UserAvatar: FC<UserAvatarProps> = (props) => {
     >
       <AvatarImage
         src={imageUrl}
-        alt={name}
+        alt={name || ""}
       />
     </Avatar>
   )

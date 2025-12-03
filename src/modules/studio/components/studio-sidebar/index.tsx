@@ -33,6 +33,7 @@ const StudioSidebar: FC = () => {
               >
                 <Link
                   href={ROUTERS.STUDIO}
+                  className="hidden md:block"
                 >
                   <VideoIcon
                     className="size-5"

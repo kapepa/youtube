@@ -1,13 +1,37 @@
 "use client"
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { APP_URL } from "@/constants";
 import { ROUTERS } from "@/lib/routers";
 import { SearchIcon, XIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FC, FormEvent, useState } from "react";
+import { FC, FormEvent, Suspense, useState } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
 const SearchInput: FC = () => {
+  return (
+    <Suspense
+      fallback={<SearchInputSkeleton />}
+    >
+      <ErrorBoundary
+        fallback={<p>Error</p>}
+      >
+        <SearchInputSuspense />
+      </ErrorBoundary>
+    </Suspense>
+  )
+}
+
+const SearchInputSkeleton: FC = () => {
+  return (
+    <Skeleton
+      className="h-10 w-full"
+    />
+  )
+}
+
+const SearchInputSuspense: FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";

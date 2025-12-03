@@ -72,7 +72,7 @@ const CommentItem: FC<CommentItemProps> = (props) => {
         className="flex gap-4"
       >
         <Link
-          href={`${ROUTERS.USER}/${comment.userId}`}
+          href={`${ROUTERS.USERS}/${comment.userId}`}
         >
           <UserAvatar
             size={variant === "comment" ? "lg" : "sm"}
@@ -84,7 +84,7 @@ const CommentItem: FC<CommentItemProps> = (props) => {
           className="flex-1 min-w-0"
         >
           <Link
-            href={`${ROUTERS.USER}/${comment.userId}`}
+            href={`${ROUTERS.USERS}/${comment.userId}`}
           >
             <div
               className="flex items-center gap-2 mb-0.5"
